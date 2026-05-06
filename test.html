@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <input id="msg" placeholder="Escribe mensaje">
+  <button onclick="send()">Enviar</button>
+  <ul id="chat"></ul>
+
+  <script>
+    const ws = new WebSocket("ws://localhost:3000");
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+
+      const li = document.createElement("li");
+
+      if (data.type === "message") {
+        li.textContent = `${data.user}: ${data.message}`;
+      } else {
+        li.textContent = data.message;
+      }
+
+      document.getElementById("chat").appendChild(li);
+    };
+
+    function send() {
+      const input = document.getElementById("msg");
+
+      ws.send(JSON.stringify({
+        message: input.value
+      }));
+
+      input.value = "";
+    }
+  </script>
+</body>
+</html>
