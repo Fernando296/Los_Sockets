@@ -14,6 +14,12 @@ wss.on('connection', (ws) => {
 
     console.log(`${username} conectado`);
 
+    // Enviar nombre de usuario al cliente recién conectado
+    ws.send(JSON.stringify({
+        type: "welcome",
+        username: username
+    }));
+
     // Notificar a todos que alguien se unió
     broadcast({
         type: "join",

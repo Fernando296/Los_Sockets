@@ -6,7 +6,7 @@
   <ul id="chat"></ul>
 
   <script>
-    const ws = new WebSocket("ws://localhost:3000");
+    const ws = new WebSocket("ws://localhost:4000");
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
