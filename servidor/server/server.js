@@ -1,65 +1,101 @@
-const WebSocket = require('ws');
+const WebSocket = require("ws");
+const mongoose = require("mongoose");
+require("dotenv").config();
 
-const wss = new WebSocket.Server({ port: 4000 });
+const PORT = process.env.PORT || 4800;
 
-let clients = [];
-let userCount = 0;
+mongoose.connect(process.env.MONGO_URL)
+  .then(() => console.log("Conectado a MongoDB"))
+  .catch(err => console.error("Error MongoDB:", err.message));
 
-wss.on('connection', (ws) => {
-    userCount++;
-    const username = `Usuario_${userCount}`;
+const User = mongoose.model("User", new mongoose.Schema({
+  username: String,
+  isOnline: Boolean,
+  lastConnectedAt: Date
+}), "users");
 
-    const client = { ws, username };
-    clients.push(client);
+const Message = mongoose.model("Message", new mongoose.Schema({
+  user: String,
+  message: String,
+  timestamp: { type: Date, default: Date.now }
+}), "messages");
 
-    console.log(`${username} conectado`);
+const wss = new WebSocket.Server({ port: PORT });
+const clients = new Set();
 
-    // Enviar nombre de usuario al cliente recién conectado
-    ws.send(JSON.stringify({
-        type: "welcome",
-        username: username
-    }));
+const send = (ws, data) => {
+  if (ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify(data));
+  }
+};
 
-    // Notificar a todos que alguien se unió
+const broadcast = (data) => {
+  clients.forEach(client => send(client.ws, data));
+};
+
+wss.on("connection", async (ws, req) => {
+  const url = new URL(req.url, `http://localhost:${PORT}`);
+  const username = url.searchParams.get("username") || "Invitado";
+
+  const client = { ws, username };
+  clients.add(client);
+
+  await User.updateOne(
+    { username },
+    {
+      username,
+      isOnline: true,
+      lastConnectedAt: new Date()
+    },
+    { upsert: true }
+  );
+
+  send(ws, { type: "welcome", username });
+
+  const history = await Message.find().sort({ timestamp: 1 }).limit(100);
+  send(ws, { type: "chat_history", messages: history });
+
+  broadcast({
+    type: "join",
+    message: `${username} se unió al chat`
+  });
+
+  ws.on("message", async (data) => {
+    try {
+      const { message } = JSON.parse(data);
+      if (!message || !message.trim()) return;
+
+      const saved = await Message.create({
+        user: username,
+        message: message.trim()
+      });
+
+      broadcast({
+        type: "message",
+        user: saved.user,
+        message: saved.message,
+        timestamp: saved.timestamp
+      });
+
+      console.log("Mensaje guardado:", saved.message);
+    } catch (err) {
+      console.error("Error mensaje:", err.message);
+    }
+  });
+
+  ws.on("close", async () => {
+    clients.delete(client);
+
+    await User.updateOne(
+      { username },
+      { isOnline: false }
+    );
+
     broadcast({
-        type: "join",
-        message: `${username} se unió al chat`
+      type: "leave",
+      message: `${username} se desconectó`
     });
-
-    ws.on('message', (data) => {
-        try {
-            const parsed = JSON.parse(data);
-
-            broadcast({
-                type: "message",
-                user: username,
-                message: parsed.message,
-                timestamp: new Date()
-            });
-
-        } catch (error) {
-            console.error("Error al procesar mensaje:", error);
-        }
-    });
-
-    ws.on('close', () => {
-        clients = clients.filter(c => c.ws !== ws);
-
-        console.log(`${username} desconectado`);
-
-        broadcast({
-            type: "leave",
-            message: `${username} se desconectó`
-        });
-    });
+  });
 });
 
-function broadcast(data) {
-    const message = JSON.stringify(data);
-
-    clients.forEach(client => {
-        client.ws.send(message);
-    });
-}
-
-console.log("🔥 Servidor WebSocket corriendo en ws://localhost:4000");
+console.log(`Servidor WebSocket corriendo en ws://localhost:${PORT}`);
