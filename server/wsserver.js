@@ -1,6 +1,8 @@
-const WebSocket = require("ws");
-const mongoose = require("mongoose");
-require("dotenv").config();
+import { WebSocketServer, WebSocket } from "ws";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const PORT = process.env.PORT || 4800;
 
@@ -20,7 +22,7 @@ const Message = mongoose.model("Message", new mongoose.Schema({
   timestamp: { type: Date, default: Date.now }
 }), "messages");
 
-const wss = new WebSocket.Server({ port: PORT });
+const wss = new WebSocketServer({ port: PORT });
 const clients = new Set();
 
 const send = (ws, data) => {
