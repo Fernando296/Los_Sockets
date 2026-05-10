@@ -22,9 +22,9 @@ Para ejecutar el proyecto correctamente, siga estos pasos en el orden indicado:
 
 Abra una terminal en la raíz del proyecto y ejecute:
 
-cd servidor/server
+cd server
 npm install
-node server.js
+node wsserver.js
 
 El servidor se iniciará en el puerto 4000.
 
