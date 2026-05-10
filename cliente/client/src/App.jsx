@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
+import { GoogleLogin } from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode";
 
 function App() {
+  const [user, setUser] = useState(null);
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -18,9 +21,9 @@ function App() {
   const scrollRef = useRef(null);
   const usernameRef = useRef("");
 
-  useEffect(() => {
-    const username = import.meta.env.VITE_USERNAME || "Invitado";
-    const socket = new WebSocket(`${import.meta.env.VITE_SOCKET_URL}?username=${username}`);
+  const connectWebSocket = (name) => {
+    const socketUrl = import.meta.env.VITE_SOCKET_URL || "ws://localhost:4800";
+    const socket = new WebSocket(`${socketUrl}?username=${name}`);
     socketRef.current = socket;
 
     socket.onopen = () => {
@@ -89,17 +92,30 @@ function App() {
     socket.onerror = (error) => {
       console.error("Error WebSocket:", error);
     };
+  };
 
+  useEffect(() => {
+    if (user) {
+      connectWebSocket(user.name);
+    }
     return () => {
-      socket.close();
+      if (socketRef.current) {
+        socketRef.current.close();
+      }
     };
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  const handleLoginSuccess = (credentialResponse) => {
+    const decoded = jwtDecode(credentialResponse.credential);
+    console.log("Login exitoso:", decoded);
+    setUser(decoded);
+  };
 
   const handleSendMessage = (e) => {
     e.preventDefault();
@@ -115,6 +131,26 @@ function App() {
 
     setInputValue("");
   };
+
+  if (!user) {
+    return (
+      <div className="glass-panel animate-fade-in" style={{ padding: "40px", textAlign: "center" }}>
+        <h1 style={{ marginBottom: "20px", background: "var(--gradient-main)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", fontSize: "2rem" }}>
+          Los Sockets
+        </h1>
+        <p style={{ color: "var(--text-secondary)", marginBottom: "30px" }}>
+          Inicia sesión con tu cuenta de Google para entrar al chat.
+        </p>
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <GoogleLogin
+            onSuccess={handleLoginSuccess}
+            onError={() => console.log("Login Fallido")}
+            useOneTap
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -137,27 +173,35 @@ function App() {
           alignItems: "center",
         }}
       >
-        <div>
-          <h1
-            style={{
-              fontSize: "1.5rem",
-              fontWeight: "700",
-              background: "var(--gradient-main)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            Los Sockets
-          </h1>
-
-          <p
-            style={{
-              color: "var(--text-secondary)",
-              fontSize: "0.875rem",
-            }}
-          >
-            Chat en tiempo real {username && `- ${username}`}
-          </p>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          {user.picture && (
+            <img 
+              src={user.picture} 
+              alt="avatar" 
+              style={{ width: "40px", height: "40px", borderRadius: "50%", border: "2px solid var(--accent-primary)" }} 
+            />
+          )}
+          <div>
+            <h1
+              style={{
+                fontSize: "1.2rem",
+                fontWeight: "700",
+                background: "var(--gradient-main)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              Los Sockets
+            </h1>
+            <p
+              style={{
+                color: "var(--text-secondary)",
+                fontSize: "0.8rem",
+              }}
+            >
+              {user.name} ({user.email})
+            </p>
+          </div>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -167,12 +211,9 @@ function App() {
               height: "10px",
               borderRadius: "50%",
               backgroundColor: connected ? "#10b981" : "#ef4444",
-              boxShadow: connected
-                ? "0 0 10px #10b981"
-                : "0 0 10px #ef4444",
+              boxShadow: connected ? "0 0 10px #10b981" : "0 0 10px #ef4444",
             }}
           ></div>
-
           <span style={{ fontSize: "0.875rem", fontWeight: "500" }}>
             {connected ? "Conectado" : "Desconectado"}
           </span>
@@ -271,4 +312,5 @@ function App() {
     </div>
   );
 }
+
 export default App;
