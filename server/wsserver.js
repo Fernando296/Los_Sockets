@@ -39,7 +39,17 @@ wss.on("connection", async (ws, req) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   const username = url.searchParams.get("username") || "Invitado";
 
-  const client = { ws, username };
+  // Verify that the username is unique, if not add a number at the end
+  let finalUsername = username;
+  let counter = 1;
+  const existingNames = Array.from(clients).map(c => c.username);
+
+  while (existingNames.includes(finalUsername)) {
+    finalUsername = `${username}_${counter}`;
+    counter++;
+  }
+
+  const client = { ws, username: finalUsername };
   clients.add(client);
 
   await User.updateOne(
@@ -52,15 +62,19 @@ wss.on("connection", async (ws, req) => {
     { upsert: true }
   );
 
-  send(ws, { type: "welcome", username });
+  send(ws, { type: "welcome", username: finalUsername });
 
   const history = await Message.find().sort({ timestamp: 1 }).limit(100);
   send(ws, { type: "chat_history", messages: history });
 
   broadcast({
     type: "join",
-    message: `${username} se unió al chat`
+    message: `${finalUsername} se unió al chat`
   });
+
+    // updated list of connected users
+    const userList = Array.from(clients).map(c => c.username);
+    broadcast({ type: "user_list", users: userList });
 
   ws.on("message", async (data) => {
     try {
@@ -68,7 +82,7 @@ wss.on("connection", async (ws, req) => {
       if (!message || !message.trim()) return;
 
       const saved = await Message.create({
-        user: username,
+        user: finalUsername,
         message: message.trim()
       });
 
@@ -89,14 +103,18 @@ wss.on("connection", async (ws, req) => {
     clients.delete(client);
 
     await User.updateOne(
-      { username },
+      { username: finalUsername },
       { isOnline: false }
     );
 
     broadcast({
       type: "leave",
-      message: `${username} se desconectó`
+      message: `${finalUsername} se desconectó`
     });
+
+    // updated list after disconnection
+    const userList = Array.from(clients).map(c => c.username);
+    broadcast({ type: "user_list", users: userList });
   });
 });
 
