@@ -1,27 +1,32 @@
+// importaciones necesarias para el servidor WebSocket
 import { WebSocketServer, WebSocket } from "ws";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 
-dotenv.config();
+dotenv.config(); // Carga las variables de entorno desde el archivo .env
 
-const PORT = process.env.PORT || 4800;
+const PORT = process.env.PORT || 4800; // definición del puerto para el servidor WebSocket
 
+// conexión a la base de datos MongoDB utilizando Mongoose
 mongoose.connect(process.env.MONGO_URL)
   .then(() => console.log("Conectado a MongoDB"))
   .catch(err => console.error("Error MongoDB:", err.message));
 
+// definicion de los usuario
 const User = mongoose.model("User", new mongoose.Schema({
   username: String,
   isOnline: Boolean,
   lastConnectedAt: Date
 }), "users");
 
+// definicion de los mensajes
 const Message = mongoose.model("Message", new mongoose.Schema({
   user: String,
   message: String,
   timestamp: { type: Date, default: Date.now }
 }), "messages");
 
+// inicialización del servidor WebSocket
 const wss = new WebSocketServer({ port: PORT });
 const clients = new Set();
 
@@ -31,17 +36,20 @@ const send = (ws, data) => {
   }
 };
 
+// función para enviar un mensaje a todos los clientes conectados
 const broadcast = (data) => {
   clients.forEach(client => send(client.ws, data));
 };
 
+// manejo de conexiones entrantes al servidor WebSocket
 wss.on("connection", async (ws, req) => {
-  const url = new URL(req.url, `http://localhost:${PORT}`);
+  const url = new URL(req.url, `http://localhost:${PORT}`); // dirección URL para obtener el nombre de usuario
   const username = url.searchParams.get("username") || "Invitado";
 
-  const client = { ws, username };
+  const client = { ws, username }; // inicialización del cliente con su WebSocket y nombre de usuario
   clients.add(client);
 
+  // actualización o creación del usuario en la base de datos con su estado en línea
   await User.updateOne(
     { username },
     {
@@ -52,16 +60,19 @@ wss.on("connection", async (ws, req) => {
     { upsert: true }
   );
 
+  // mensaje de bienvenida
   send(ws, { type: "welcome", username });
 
   const history = await Message.find().sort({ timestamp: 1 }).limit(100);
   send(ws, { type: "chat_history", messages: history });
 
+  // mensaje de notificación a todos los clientes sobre la nueva conexión
   broadcast({
     type: "join",
     message: `${username} se unió al chat`
   });
 
+  // manejo de mensajes entrantes desde el cliente
   ws.on("message", async (data) => {
     try {
       const { message } = JSON.parse(data);
@@ -85,6 +96,7 @@ wss.on("connection", async (ws, req) => {
     }
   });
 
+  // manejo de desconexiones del cliente
   ws.on("close", async () => {
     clients.delete(client);
 
@@ -100,4 +112,5 @@ wss.on("connection", async (ws, req) => {
   });
 });
 
+// logs para indicar que el servidor WebSocket está corriendo
 console.log(`Servidor WebSocket corriendo en ws://localhost:${PORT}`);
