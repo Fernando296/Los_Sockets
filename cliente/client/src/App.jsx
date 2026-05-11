@@ -22,6 +22,7 @@ function App() {
   const usernameRef = useRef("");
 
   const connectWebSocket = (name) => {
+    console.log("Variable de entorno VITE_SOCKET_URL:", import.meta.env.VITE_SOCKET_URL);
     const socketUrl = import.meta.env.VITE_SOCKET_URL || "ws://localhost:4800";
     const socket = new WebSocket(`${socketUrl}?username=${name}`);
     socketRef.current = socket;
