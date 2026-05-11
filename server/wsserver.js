@@ -46,7 +46,7 @@ wss.on("connection", async (ws, req) => {
   const url = new URL(req.url, `http://localhost:${PORT}`); // dirección URL para obtener el nombre de usuario
   const username = url.searchParams.get("username") || "Invitado";
 
-  const client = { ws, username }; // inicialización del cliente con su WebSocket y nombre de usuario
+  const client = { ws, username };
   clients.add(client);
 
   // actualización o creación del usuario en la base de datos con su estado en línea
@@ -60,7 +60,6 @@ wss.on("connection", async (ws, req) => {
     { upsert: true }
   );
 
-  // mensaje de bienvenida
   send(ws, { type: "welcome", username });
 
   const history = await Message.find().sort({ timestamp: 1 }).limit(100);
@@ -69,8 +68,12 @@ wss.on("connection", async (ws, req) => {
   // mensaje de notificación a todos los clientes sobre la nueva conexión
   broadcast({
     type: "join",
-    message: `${username} se unió al chat`
+    message: `${finalUsername} se unió al chat`
   });
+
+    // updated list of connected users
+    const userList = Array.from(clients).map(c => c.username);
+    broadcast({ type: "user_list", users: userList });
 
   // manejo de mensajes entrantes desde el cliente
   ws.on("message", async (data) => {
@@ -79,7 +82,7 @@ wss.on("connection", async (ws, req) => {
       if (!message || !message.trim()) return;
 
       const saved = await Message.create({
-        user: username,
+        user: finalUsername,
         message: message.trim()
       });
 
@@ -101,14 +104,18 @@ wss.on("connection", async (ws, req) => {
     clients.delete(client);
 
     await User.updateOne(
-      { username },
+      { username: finalUsername },
       { isOnline: false }
     );
 
     broadcast({
       type: "leave",
-      message: `${username} se desconectó`
+      message: `${finalUsername} se desconectó`
     });
+
+    // updated list after disconnection
+    const userList = Array.from(clients).map(c => c.username);
+    broadcast({ type: "user_list", users: userList });
   });
 });
 

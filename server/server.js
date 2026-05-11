@@ -19,7 +19,7 @@ const User = mongoose.model("User", UserSchema, "users");
 
 // Ruta principal del servidor que devuelve una lista de usuarios almacenados en la base de datos
 
-app.get("/", async (_req, res) => {
+app.get("/", async (req, res) => {
   try {
     const users = await User.find();
     res.json(users);
