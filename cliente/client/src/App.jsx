@@ -1,8 +1,10 @@
+// importaciones necesarias para React, Google Login y decodificación de JWT
 import React, { useEffect, useRef, useState } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 
 function App() {
+  // Estado para almacenar la información del usuario autenticado y los mensajes del chat
   const [user, setUser] = useState(null);
   const [messages, setMessages] = useState([
     {
@@ -13,6 +15,7 @@ function App() {
     },
   ]);
 
+  // Estados para manejar el valor del input, la conexión al WebSocket y el nombre de usuario
   const [inputValue, setInputValue] = useState("");
   const [connected, setConnected] = useState(false);
   const [username, setUsername] = useState("");
@@ -21,6 +24,7 @@ function App() {
   const scrollRef = useRef(null);
   const usernameRef = useRef("");
 
+  // Función para establecer la conexión WebSocket con el servidor y manejar los eventos de conexión, mensajes entrantes y desconexión
   const connectWebSocket = (name) => {
     // Usamos directamente tu URL de Render (con wss://)
     const socketUrl = "wss://los-sockets.onrender.com";
@@ -33,15 +37,18 @@ function App() {
       console.log("Conectado al WebSocket");
     };
 
+    // Manejo de mensajes entrantes del servidor WebSocket
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
       console.log("Mensaje recibido:", data);
 
+      // Manejo de diferentes tipos de mensajes recibidos del servidor
       if (data.type === "welcome") {
         setUsername(data.username);
         usernameRef.current = data.username;
       }
 
+      // Si el mensaje es del tipo "chat_history", actualizamos el estado de mensajes con el historial recibido del servidor
       if (data.type === "chat_history") {
         const history = data.messages.map((msg) => ({
           id: msg._id,
@@ -61,6 +68,7 @@ function App() {
         ]);
       }
 
+      // Si el mensaje es del tipo "message", agregamos el nuevo mensaje al estado de mensajes para mostrarlo en la interfaz
       if (data.type === "message") {
         setMessages((prev) => [
           ...prev,
@@ -73,6 +81,7 @@ function App() {
         ]);
       }
 
+      // Si el mensaje es del tipo "join" o "leave", agregamos un mensaje de sistema al estado de mensajes para notificar a los usuarios sobre la conexión o desconexión de otros usuarios
       if (data.type === "join" || data.type === "leave") {
         setMessages((prev) => [
           ...prev,
@@ -96,6 +105,7 @@ function App() {
     };
   };
 
+  // Efecto para establecer la conexión WebSocket cuando el usuario se autentica y limpiar la conexión al desmontar el componente
   useEffect(() => {
     if (user) {
       connectWebSocket(user.name);
@@ -107,12 +117,14 @@ function App() {
     };
   }, [user]);
 
+  // Efecto para hacer scroll automático hacia el último mensaje cada vez que se actualiza el estado de mensajes
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
 
+  // manejo de credenciales de inicio con Google
   const handleLoginSuccess = (credentialResponse) => {
     const decoded = jwtDecode(credentialResponse.credential);
     console.log("Login exitoso:", decoded);
@@ -134,6 +146,7 @@ function App() {
     setInputValue("");
   };
 
+  // Si el usuario no está autenticado, mostramos la pantalla de inicio de sesión con Google
   if (!user) {
     return (
       <div className="glass-panel animate-fade-in" style={{ padding: "40px", textAlign: "center" }}>
@@ -154,6 +167,7 @@ function App() {
     );
   }
 
+  // Si el usuario está autenticado, mostramos la interfaz principal del chat con el historial de mensajes y el formulario para enviar nuevos mensajes
   return (
     <div
       className="glass-panel animate-fade-in"
