@@ -24,6 +24,7 @@ function App() {
   const connectWebSocket = (name) => {
     // Usamos directamente tu URL de Render (con wss://)
     const socketUrl = "wss://los-sockets.onrender.com";
+    //const socketUrl = import.meta.env.VITE_SOCKET_URL || "ws://localhost:4800";
     const socket = new WebSocket(`${socketUrl}?username=${name}`);
     socketRef.current = socket;
 
@@ -176,10 +177,10 @@ function App() {
       >
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           {user.picture && (
-            <img 
-              src={user.picture} 
-              alt="avatar" 
-              style={{ width: "40px", height: "40px", borderRadius: "50%", border: "2px solid var(--accent-primary)" }} 
+            <img
+              src={user.picture}
+              alt="avatar"
+              style={{ width: "40px", height: "40px", borderRadius: "50%", border: "2px solid var(--accent-primary)" }}
             />
           )}
           <div>
@@ -242,8 +243,8 @@ function App() {
                 msg.type === "me"
                   ? "flex-end"
                   : msg.type === "system"
-                  ? "center"
-                  : "flex-start",
+                    ? "center"
+                    : "flex-start",
               maxWidth: "70%",
             }}
           >
@@ -269,14 +270,14 @@ function App() {
                   msg.type === "me"
                     ? "20px 20px 4px 20px"
                     : msg.type === "system"
-                    ? "12px"
-                    : "20px 20px 20px 4px",
+                      ? "12px"
+                      : "20px 20px 20px 4px",
                 background:
                   msg.type === "me"
                     ? "var(--gradient-main)"
                     : msg.type === "system"
-                    ? "rgba(255,255,255,0.05)"
-                    : "rgba(255,255,255,0.1)",
+                      ? "rgba(255,255,255,0.05)"
+                      : "rgba(255,255,255,0.1)",
                 fontSize: msg.type === "system" ? "0.875rem" : "1rem",
                 textAlign: msg.type === "system" ? "center" : "left",
                 color: msg.type === "system" ? "var(--text-secondary)" : "white",
