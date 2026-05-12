@@ -264,7 +264,9 @@ function App() {
 
         <div className="sidebar-footer">
           <div className="current-user-card">
-            <div className="avatar av-teal">{initials(user.name)}</div>
+            <div className="avatar-wrap">
+              <div className="avatar av-teal">{initials(user.name)}</div>
+            </div>
             <div className="current-user-info">
               <p>{user.name}</p>
               <p>{connected ? "En línea" : "Desconectado"}</p>
