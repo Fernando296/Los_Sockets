@@ -1,18 +1,23 @@
+// Principales importaciones de las dependencias necesarias para el servidor
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 
 dotenv.config();
 
+// constantes iniciales para la conexión a la base de datos y el servidor
 const app = express();
 const port = 4800;
 
+// Definición del esquema de usuario para la base de datos MongoDB utilizando Mongoose
 const UserSchema = new mongoose.Schema({
   id: Number,
   username: String,
 });
 
 const User = mongoose.model("User", UserSchema, "users");
+
+// Ruta principal del servidor que devuelve una lista de usuarios almacenados en la base de datos
 
 app.get("/", async (req, res) => {
   try {
@@ -27,6 +32,7 @@ app.get("/", async (req, res) => {
   }
 });
 
+// conexion con la base de datos mongoDB
 try {
   await mongoose.connect(process.env.MONGO_URL);
 
