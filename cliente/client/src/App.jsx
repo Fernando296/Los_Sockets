@@ -200,30 +200,36 @@ function App() {
     return (
       <div className="login-screen">
         <div className="login-wrapper">
-          <div className="login-logo"><SkijanLogo /></div>
-          <h1 className="login-brand">Skijan</h1>
+          <div className="login-logo">
+            <SkijanLogo />
+          </div>
+          <h1 className="login-brand">SocketsChat</h1>
           <p className="login-tagline">Chat colaborativo en tiempo real</p>
-          
+
           <div className="login-card">
             <p className="login-card-title">Bienvenido/a</p>
             <p className="login-card-sub">Elige cómo deseas ingresar</p>
-            
+
             <GoogleLogin
               onSuccess={handleLoginSuccess}
-              onError={() => console.log("Login Fallido")}
+              onError={() => console.log('Login Fallido')}
               useOneTap
             />
 
-            <div className="login-divider"><span>o</span></div>
+            <div className="login-divider">
+              <span>o</span>
+            </div>
 
             <button className="btn-guest" onClick={handleGuestLogin}>
               <span style={{ fontSize: '18px' }}>👤</span>
               <span>Continuar como invitado</span>
             </button>
 
-            <p className="login-note">Se asignará automáticamente un nombre de usuario temporal</p>
+            <p className="login-note">
+              Se asignará automáticamente un nombre de usuario temporal
+            </p>
           </div>
-          <p className="login-footer">Skijan · Chat Colaborativo v1.0</p>
+          <p className="login-footer">SocketsChat · Chat Colaborativo v1.0</p>
         </div>
       </div>
     );
@@ -242,7 +248,7 @@ function App() {
         <div className="sidebar-header">
           <div className="sidebar-brand">
             <SkijanLogo size={28} />
-            <span className="sidebar-brand-name">Skijan</span>
+            <span className="sidebar-brand-name">SocketsChat</span>
           </div>
           <button className="menu-toggle" onClick={() => setSidebarOpen(false)}>
             <span style={{ fontSize: '20px' }}>✕</span>
@@ -264,7 +270,9 @@ function App() {
 
         <div className="sidebar-footer">
           <div className="current-user-card">
-            <div className="avatar av-teal">{initials(user.name)}</div>
+            <div className="avatar-wrap">
+              <div className="avatar av-teal">{initials(user.name)}</div>
+            </div>
             <div className="current-user-info">
               <p>{user.name}</p>
               <p>{connected ? "En línea" : "Desconectado"}</p>

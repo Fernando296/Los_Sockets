@@ -1,54 +1,52 @@
-# Chat Colaborativo en Tiempo Real
+# 🚀 SocketsChat - Chat Colaborativo
 
-Proyecto de chat utilizando WebSockets para permitir la comunicación bidireccional entre múltiples usuarios de forma instantánea.
+### Universidad Mayor de San Simón (UMSS)
+**Grupo 2 - Los Sockets**
 
-## Tecnologías Utilizadas
+SocketsChat es una aplicación de chat en tiempo real diseñada para ser instalada y ejecutada en menos de 5 minutos.
 
-- Frontend: React (SPA) con Vite.
-- Backend: Node.js con la librería ws.
-- Comunicación: Protocolo WebSocket.
+---
 
-## Estructura del Proyecto
+## 🛠️ Guía de Instalación Rápida (Copia y Pega)
 
-- cliente/client: Contiene el código fuente de la aplicación React y su configuración.
-- servidor/server: Contiene la lógica del servidor WebSocket.
-- test.html: Cliente básico en HTML puro para pruebas de conectividad inicial.
+Sigue estos 3 pasos en tu terminal (PowerShell o CMD):
 
-## Instrucciones de Ejecución
+### 1. Clonar el proyecto
+```bash
+git clone https://github.com/Fernando296/Los_Sockets.git
+cd Los_Sockets
+```
 
-Para ejecutar el proyecto correctamente, siga estos pasos en el orden indicado:
+### 2. Configuración Automática (Base de Datos + Dependencias)
+Copia y pega este comando completo para configurar la base de datos de prueba y preparar el sistema:
 
-### 1. Iniciar el Servidor (Backend)
+**Si usas Windows (PowerShell):**
+```powershell
+echo "MONGO_URL=mongodb+srv://db_umss:UQzfSe6BGNlCbBVI@umss.aqnxfff.mongodb.net/sockets_chat?appName=umss" > server/.env; npm run setup
+```
 
-Abra una terminal en la raíz del proyecto y ejecute:
+**Si usas Linux/macOS:**
+```bash
+echo "MONGO_URL=mongodb+srv://db_umss:UQzfSe6BGNlCbBVI@umss.aqnxfff.mongodb.net/sockets_chat?appName=umss" > server/.env && npm run setup
+```
 
-cd server
-npm install
-node wsserver.js
-
-El servidor se iniciará en el puerto 4000.
-
-### 2. Iniciar el Cliente (Frontend)
-
-Abra una nueva terminal (manteniendo la del servidor abierta) y ejecute:
-
-cd cliente/client
-npm install
+### 3. Ejecutar el Proyecto
+Una vez termine la instalación, lanza el chat con:
+```bash
 npm run dev
+```
 
-Vite le proporcionará una URL local (normalmente http://localhost:5173).
+---
 
-### 3. Prueba de Funcionamiento
+## 💡 Cómo probarlo
+1. Abre tu navegador en la dirección que te muestre la terminal (normalmente `http://localhost:5173`).
+2. Inicia sesión con Google o como **Invitado**.
+3. Abre la misma URL en otra pestaña para chatear contigo mismo o invita a un amigo.
 
-- Abra la URL del cliente en su navegador.
-- Puede abrir la misma URL en varias pestañas o diferentes navegadores para simular múltiples usuarios.
-- Verá notificaciones automáticas cuando alguien se conecte o desconecte.
-- Los mensajes enviados se distribuirán a todos los participantes en tiempo real.
+## 📂 Estructura
+- `server/`: El cerebro del chat (Node.js + WebSockets).
+- `cliente/client/`: La interfaz visual (React + Vite).
+- `package.json`: El control maestro para ejecutar todo a la vez.
 
-## Características Implementadas
-
-- Manejo de múltiples conexiones simultáneas.
-- Historial de mensajes visible.
-- Asignación automática de nombres de usuario (Usuario_1, Usuario_2, etc.).
-- Notificaciones de sistema para conexiones y desconexiones.
-- Identificación de mensajes propios en la interfaz de React.
+---
+**SocketsChat** · UMSS 2024 · v1.0
