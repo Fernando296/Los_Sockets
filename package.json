@@ -1,0 +1,13 @@
+{
+  "name": "los-sockets",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev:server": "npm start --prefix server",
+    "dev:client": "npm run dev --prefix cliente/client",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
