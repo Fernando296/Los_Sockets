@@ -92,7 +92,9 @@ function App() {
     // Si estás en desarrollo local, puedes usar ws://localhost:4800
     // Para producción en Render: wss://los-sockets.onrender.com
     const isLocal = window.location.hostname === "localhost";
-    const socketUrl = isLocal ? "ws://localhost:4800" : "wss://los-sockets.onrender.com";
+    const socketUrl = isLocal
+      ? 'ws://localhost:4800'
+      : 'wss://api.socketschat.pipexapp.com';
     
     console.log(`Conectando a: ${socketUrl}`);
     const socket = new WebSocket(`${socketUrl}?username=${encodeURIComponent(name)}`);
