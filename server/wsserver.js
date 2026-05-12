@@ -68,7 +68,7 @@ wss.on("connection", async (ws, req) => {
   // mensaje de notificación a todos los clientes sobre la nueva conexión
   broadcast({
     type: "join",
-    message: `${finalUsername} se unió al chat`
+    message: `${username} se unió al chat`
   });
 
     // updated list of connected users
@@ -82,7 +82,7 @@ wss.on("connection", async (ws, req) => {
       if (!message || !message.trim()) return;
 
       const saved = await Message.create({
-        user: finalUsername,
+        user: username,
         message: message.trim()
       });
 
@@ -104,13 +104,13 @@ wss.on("connection", async (ws, req) => {
     clients.delete(client);
 
     await User.updateOne(
-      { username: finalUsername },
+      { username: username },
       { isOnline: false }
     );
 
     broadcast({
       type: "leave",
-      message: `${finalUsername} se desconectó`
+      message: `${username} se desconectó`
     });
 
     // updated list after disconnection
